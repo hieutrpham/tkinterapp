@@ -24,10 +24,10 @@ class Login:
         self.entry_pass.grid(row=1, column=1)
 
         self.button_submit = ttk.Button(self.frame, text='Submit', command=self.submit)
-        self.button_submit.grid(row=2, column=0)
+        self.button_submit.grid(row=2, column=0, sticky='e')
 
         self.button_cancel = ttk.Button(self.frame, text='Cancel', command=self.cancel)
-        self.button_cancel.grid(row=2, column=1)
+        self.button_cancel.grid(row=2, column=1, sticky='w')
 
     def submit(self):
         print('submited')
