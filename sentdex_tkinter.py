@@ -12,17 +12,22 @@ class SeaofBTCapp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.iconbitmap(self, default=r'C:\Users\hieup\Documents\GitHub\tkinterapp\got.ico')
         tk.Tk.wm_title(self, 'Sea of BTC')
-        tk.Tk.geometry(self, '300x100')
 
         container = tk.Frame(self)
-
         container.pack(side="top", fill="both", expand = True)
-
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        self.frames = {}
+        menubar = tk.Menu(container)
+        filemenu = tk.Menu(menubar, tearoff=0)
+        filemenu.add_command(label='Save settings', command=lambda: popupmsg('Not supported just yet!'))
+        filemenu.add_separator()
+        filemenu.add_command(label='Exit', command=quit)
+        menubar.add_cascade(label='File', menu=filemenu)
 
+        tk.Tk.config(self, menu=menubar)
+
+        self.frames = {}
         for F in (StartPage, PageOne, PageTwo):
 
             frame = F(container, controller=self)
@@ -89,4 +94,5 @@ class PageTwo(tk.Frame):
 
 
 app = SeaofBTCapp()
+app.geometry('500x500')
 app.mainloop()
