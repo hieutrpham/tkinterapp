@@ -1,8 +1,25 @@
 import tkinter as tk
+from tkinter import messagebox as msg
 from tkinter import ttk
 
 
 LARGE_FONT= ("Verdana", 12)
+NORM_FONT= ("Verdana", 10)
+SMALL_FONT= ("Verdana", 8)
+
+
+exchange = 'BTC-e'
+datcounter = 9000
+program_name = 'btce'
+
+def change_exchange(towhat, pn):
+    global exchange
+    global datcounter
+    global program_name
+
+    exchange = towhat
+    program_name = pn
+    datcounter = 9000
 
 
 class SeaofBTCapp(tk.Tk):
@@ -20,10 +37,17 @@ class SeaofBTCapp(tk.Tk):
 
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label='Save settings', command=lambda: popupmsg('Not supported just yet!'))
+        filemenu.add_command(label='Save settings', command=lambda: msg.showinfo('Tile', 'Not supported just yet!'))
         filemenu.add_separator()
         filemenu.add_command(label='Exit', command=quit)
         menubar.add_cascade(label='File', menu=filemenu)
+
+        exchange = tk.Menu(menubar, tearoff=1)
+        exchange.add_command(label='BTC-e', command=lambda: change_exchange('BTC-e', 'btce'))
+        exchange.add_command(label='Bitfinex', command=lambda: change_exchange('Bitfinex', 'bitfinex'))
+        exchange.add_command(label='Bitstamp', command=lambda: change_exchange('Bitstamp', 'bitstamp'))
+        exchange.add_command(label='Huobi', command=lambda: change_exchange('Huobi', 'huobi'))
+        menubar.add_cascade(label='Exchange', menu=exchange)
 
         tk.Tk.config(self, menu=menubar)
 
@@ -42,7 +66,6 @@ class SeaofBTCapp(tk.Tk):
 
         frame = self.frames[page]
         frame.tkraise()
-
         
 class StartPage(tk.Frame):
 
