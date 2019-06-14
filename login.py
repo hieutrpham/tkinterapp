@@ -1,47 +1,68 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog as fd
+import cx_Oracle as cx
+from pricecheck import run
 
-class Login:
 
-    def __init__(self, master):
+ip = 'ORAPROD.FRTSERVICES.COM'
+port = 1522
+SID = 'PROD01.FRTSERVICES.COM'
+dsn_tns = cx.makedsn(ip, port, service_name=SID)
+tables = ['TRANSACTION', 'TRANSACTION_ARCHIVE', 'TRANSACTION_INELIGIBLE']
 
-        master.title('Login')
-        master.resizable(False, False)
-        master.geometry('220x100')
 
-        self.frame1 = ttk.Frame(master)
-        self.frame1.pack()
+class FRT(tk.Tk):
 
-        self.frame2 = ttk.Frame(master)
-        self.frame2.pack()    
+    def __init__(self):
 
-        self.label_user = ttk.Label(self.frame1, text='Username:')
-        self.label_user.grid(row=0, column=0, pady=2, sticky='e')
-
-        self.entry_user = ttk.Entry(self.frame1)
-        self.entry_user.grid(row=0, column=1, pady=2)
-
-        self.label_pass = ttk.Label(self.frame1, text='Password:')
-        self.label_pass.grid(row=1, column=0, pady=2, sticky='e')
-
-        self.entry_pass = ttk.Entry(self.frame1, show='*')
-        self.entry_pass.grid(row=1, column=1, pady=2, sticky='w')
+        tk.Tk.__init__(self)
+        tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
+        tk.Tk.wm_title(self, 'Sea of FRT')
         
-        self.button_submit = ttk.Button(self.frame2, text='Submit', command=self.submit)
-        self.button_submit.grid(row=0, column=0, pady=10)
+        self.file_path = None
+        self.username = None
+        self.password = None
+        self.currency = None
 
-        self.button_cancel = ttk.Button(self.frame2, text='Cancel', command=master.destroy)
-        self.button_cancel.grid(row=0, column=1, pady=10)
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand = True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)  
 
-    def submit(self):
-        username = self.entry_user.get()
-        password = self.entry_pass.get()
-        print(username, password)
+        label_user = ttk.Label(container, text='Username:')
+        label_user.pack()
 
-def main():
-    root = tk.Tk()
-    Login(root)
-    root.mainloop()
+        self.entry_user = ttk.Entry(container)
+        self.entry_user.pack(pady=5,padx=5)
 
-if __name__ == '__main__':
-    main()
+        label_pass = ttk.Label(container, text='Password:')
+        label_pass.pack()
+
+        self.entry_pass = ttk.Entry(container, show='*')
+        self.entry_pass.pack(pady=5,padx=5)
+
+        button_browse = ttk.Button(container, text='Browse', command=self.browse_file)
+        button_browse.pack(pady=5,padx=5)
+
+        self.file_entry = ttk.Entry(container, textvariable=self.file_path)
+        self.file_entry.pack(pady=5,padx=5)
+
+        label_currency = ttk.Label(container, text='Currency to check')
+        label_currency.pack()
+
+        self.currency_entry = ttk.Entry(container, textvariable=self.currency)
+        self.currency_entry.pack()
+
+        button_price_check = ttk.Button(container, text='Price Check', command=lambda: run(self.username, self.password, dsn_tns, self.file_path, self.currency, tables))
+        button_price_check.pack(pady=5,padx=5)
+
+    def browse_file(self):
+        self.file_path = fd.askopenfilename(initialdir=r"C:\Users",
+                                filetypes=(("All files", "*.*"),))
+        self.file_entry.delete(0, tk.END)                                
+        self.file_entry.insert(0, self.file_path)
+
+app = FRT()
+app.geometry('250x250')
+app.mainloop()

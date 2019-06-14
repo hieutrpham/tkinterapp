@@ -8,26 +8,12 @@ NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
 
 
-exchange = 'BTC-e'
-datcounter = 9000
-program_name = 'btce'
-
-def change_exchange(towhat, pn):
-    global exchange
-    global datcounter
-    global program_name
-
-    exchange = towhat
-    program_name = pn
-    datcounter = 9000
-
-
 class SeaofBTCapp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         
         tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.iconbitmap(self, default=r'C:\Users\hieup\Documents\GitHub\tkinterapp\got.ico')
+        tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
         tk.Tk.wm_title(self, 'Sea of BTC')
 
         container = tk.Frame(self)
