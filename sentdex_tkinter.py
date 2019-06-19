@@ -1,6 +1,16 @@
 import tkinter as tk
 from tkinter import messagebox as msg
 from tkinter import ttk
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+import matplotlib.animation as animation
+from matplotlib import style
+style.use('ggplot')
+import pandas as pd
+import numpy as np
+import json
 
 
 LARGE_FONT= ("Verdana", 12)
@@ -28,17 +38,10 @@ class SeaofBTCapp(tk.Tk):
         filemenu.add_command(label='Exit', command=quit)
         menubar.add_cascade(label='File', menu=filemenu)
 
-        exchange = tk.Menu(menubar, tearoff=1)
-        exchange.add_command(label='BTC-e', command=lambda: change_exchange('BTC-e', 'btce'))
-        exchange.add_command(label='Bitfinex', command=lambda: change_exchange('Bitfinex', 'bitfinex'))
-        exchange.add_command(label='Bitstamp', command=lambda: change_exchange('Bitstamp', 'bitstamp'))
-        exchange.add_command(label='Huobi', command=lambda: change_exchange('Huobi', 'huobi'))
-        menubar.add_cascade(label='Exchange', menu=exchange)
-
         tk.Tk.config(self, menu=menubar)
 
         self.frames = {}
-        for F in (StartPage, PageOne, PageTwo):
+        for F in (StartPage, PageOne):
 
             frame = F(container, controller=self)
 
@@ -64,10 +67,33 @@ class StartPage(tk.Frame):
                             command=lambda: controller.show_frame(PageOne))
         button.pack()
 
-        button2 = ttk.Button(self, text="Visit Page 2",
-                            command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
+        self.figure = Figure(figsize=(5,4), dpi=100)
+        self.animation = self.figure.add_subplot(111)
 
+        canvas = FigureCanvasTkAgg(self.figure, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
+
+    def animate(self, i):
+        pullData = open('sampletext.txt','r').read()
+        dataArray = pullData.split('\n')
+        xar=[]
+        yar=[]
+        for eachLine in dataArray:
+            if len(eachLine)>1:
+                x,y = eachLine.split(',')
+                xar.append(int(x))
+                yar.append(int(y))
+        self.animation.clear()
+        self.animation.plot(xar,yar)
+
+    
 
 class PageOne(tk.Frame):
 
@@ -80,28 +106,6 @@ class PageOne(tk.Frame):
                             command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        button2 = ttk.Button(self, text="Page Two",
-                            command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-
-class PageTwo(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button1 = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = ttk.Button(self, text="Page One",
-                            command=lambda: controller.show_frame(PageOne))
-        button2.pack()
         
-
-
 app = SeaofBTCapp()
-app.geometry('500x500')
 app.mainloop()
