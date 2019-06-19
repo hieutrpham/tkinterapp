@@ -10,7 +10,7 @@ from matplotlib import style
 style.use('ggplot')
 import pandas as pd
 import numpy as np
-import json
+import json, requests
 
 
 LARGE_FONT= ("Verdana", 12)
@@ -81,17 +81,11 @@ class StartPage(tk.Frame):
         self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
 
     def animate(self, i):
-        pullData = open('sampletext.txt','r').read()
-        dataArray = pullData.split('\n')
-        xar=[]
-        yar=[]
-        for eachLine in dataArray:
-            if len(eachLine)>1:
-                x,y = eachLine.split(',')
-                xar.append(int(x))
-                yar.append(int(y))
+        data = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
+        df = pd.Series(data.json()['bpi'])
+
         self.animation.clear()
-        self.animation.plot(xar,yar)
+        self.animation.plot_date(df)
 
     
 
