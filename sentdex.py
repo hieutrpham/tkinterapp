@@ -11,7 +11,7 @@ style.use('ggplot')
 import pandas as pd
 import numpy as np
 import json, requests
-
+from mpl_finance import candlestick_ohlc
 
 LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
@@ -23,7 +23,9 @@ class SeaofBTCapp(tk.Tk):
     def __init__(self, *args, **kwargs):
         
         tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
+        
+        # tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
+        
         tk.Tk.wm_title(self, 'Sea of BTC')
 
         container = tk.Frame(self)
@@ -85,7 +87,7 @@ class StartPage(tk.Frame):
         df = pd.Series(data.json()['bpi'])
 
         self.animation.clear()
-        self.animation.plot_date(df)
+        self.animation.plot(df)
 
     
 
