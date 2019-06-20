@@ -11,6 +11,12 @@ style.use('ggplot')
 import pandas as pd
 import numpy as np
 import json, requests
+from mpl_finance import candlestick_ohlc as candle
+from alpha_vantage.timeseries import TimeSeries as ts
+from alpha_vantage.cryptocurrencies import CryptoCurrencies as cc
+from utilities import Info
+import matplotlib.dates as mdates
+import matplotlib.ticker as mticker
 
 
 LARGE_FONT= ("Verdana", 12)
@@ -68,7 +74,7 @@ class StartPage(tk.Frame):
         button.pack()
 
         self.figure = Figure(figsize=(5,4), dpi=100)
-        self.animation = self.figure.add_subplot(111)
+        self.ax = self.figure.add_subplot(111)
 
         canvas = FigureCanvasTkAgg(self.figure, self)
         canvas.draw()
@@ -78,14 +84,34 @@ class StartPage(tk.Frame):
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
+        df1 = cc(key=Info.alpha_key, output_format='pandas')
+        btc = df1.get_digital_currency_daily('BTC', 'USD')
+        btc = btc[0].reset_index()
+        btc.sort_values(by='date', ascending=False, inplace=True)
+        btc = btc.iloc[:100, :]
+        btc['date'] = pd.to_datetime(btc['date'])
+        btc["MPLDates"] = btc["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
-    def animate(self, i):
-        data = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
-        df = pd.Series(data.json()['bpi'])
+        candle(self.ax, btc[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup='#00A3E0', colordown='#183A54')
+        
+        for label in self.ax.xaxis.get_ticklabels():
+            label.set_rotation(45)
+        
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
 
-        self.animation.clear()
-        self.animation.plot_date(df)
+        # self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
+    # def get_data(self):
+    #     df1 = cc(key=Info.alpha_key, output_format='pandas')
+    #     btc = df1.get_digital_currency_daily('BTC', 'USD') 
+
+
+    # def animate(self, i):
+    #     data = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
+    #     df = pd.Series(data.json()['bpi'])
+
+    #     self.animation.clear()
+    #     self.animation.plot_date(df)
 
     
 
