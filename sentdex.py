@@ -70,13 +70,10 @@ class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
 
-        self.coinsymbol = tk.Entry(self)
-        self.coinsymbol.pack()
-
-        ttk.Button(self, text="Refresh", command=lambda: self.get_crypto(self.coinsymbol.get())).pack()
+        self.symbol_entry = tk.Entry(self)
+        self.symbol_entry.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get())))
+        self.symbol_entry.pack()
 
         self.figure = Figure(figsize=(5,4), dpi=100)
         self.ax = self.figure.add_subplot(111)
@@ -91,18 +88,18 @@ class StartPage(tk.Frame):
         self.get_crypto('btc')
 
     def get_crypto(self, coin):
-        
+
         self.ax.clear()
 
-        df1 = cc(key=alpha_key, output_format='pandas')
-        btc = df1.get_digital_currency_daily(coin, 'USD')
-        btc = btc[0].reset_index()
-        btc.sort_values(by='date', ascending=False, inplace=True)
-        btc = btc.iloc[:100, :]
-        btc['date'] = pd.to_datetime(btc['date'])
-        btc["MPLDates"] = btc["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+        df = cc(key=alpha_key, output_format='pandas')
+        crypto = df.get_digital_currency_daily(coin, 'USD')
+        crypto = crypto[0].reset_index()
+        crypto.sort_values(by='date', ascending=False, inplace=True)
+        crypto = crypto.iloc[:100, :]
+        crypto['date'] = pd.to_datetime(crypto['date'])
+        crypto["MPLDates"] = crypto["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
-        candle(self.ax, btc[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
+        candle(self.ax, crypto[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
         for label in self.ax.xaxis.get_ticklabels():
             label.set_rotation(45)
@@ -111,21 +108,36 @@ class StartPage(tk.Frame):
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
         self.figure.autofmt_xdate()
         self.figure.tight_layout()
-
+        self.ax.set_ylabel('Price')
+        self.ax.set_xlabel('Date')
+        self.ax.set_title(f'{coin.upper()} Daily Prices')
         self.canvas.draw()
 
-        # self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
-    # def get_data(self):
-    #     df1 = cc(key=Info.alpha_key, output_format='pandas')
-    #     btc = df1.get_digital_currency_daily('BTC', 'USD') 
+    def get_stock(self, stock):
 
+        self.ax.clear()
 
-    # def animate(self, i):
-    #     data = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
-    #     df = pd.Series(data.json()['bpi'])
+        df = ts(key=alpha_key, output_format='pandas')
+        stock_data = df.get_daily_adjusted(stock, 'USD')
+        stock_data = stock_data[0].reset_index()
+        stock_data.sort_values(by='date', ascending=False, inplace=True)
+        stock_data = stock_data.iloc[:100, :]
+        stock_data['date'] = pd.to_datetime(stock_data['date'])
+        stock_data["MPLDates"] = stock_data["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
-    #     self.animation.clear()
-    #     self.animation.plot_date(df)
+        candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
+        
+        for label in self.ax.xaxis.get_ticklabels():
+            label.set_rotation(45)
+        
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
+        self.figure.autofmt_xdate()
+        self.figure.tight_layout()
+        self.ax.set_ylabel('Price')
+        self.ax.set_xlabel('Date')
+        self.ax.set_title(f'{stock.upper()} Daily Prices')
+        self.canvas.draw()
     
 
 class PageOne(tk.Frame):
@@ -141,5 +153,4 @@ class PageOne(tk.Frame):
 
         
 app = SeaofBTCapp()
-app.geometry('1280x720')
 app.mainloop()
