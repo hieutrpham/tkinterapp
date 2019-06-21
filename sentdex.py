@@ -10,11 +10,10 @@ from matplotlib import style
 style.use('ggplot')
 import pandas as pd
 import numpy as np
-import json, requests
 from mpl_finance import candlestick_ohlc as candle
 from alpha_vantage.timeseries import TimeSeries as ts
 from alpha_vantage.cryptocurrencies import CryptoCurrencies as cc
-from utilities import Info
+# from utilities import Info
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 
@@ -23,6 +22,9 @@ LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
 
+lightcolor = '#00A3E0'
+darkcolor = '#183A54'
+alpha_key = 'EAY8N3YJIB72Q35C'
 
 class SeaofBTCapp(tk.Tk):
 
@@ -71,36 +73,46 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        button = ttk.Button(self, text="Visit Page 1",
-                            command=lambda: controller.show_frame(PageOne))
-        button.pack()
+        self.coinsymbol = tk.Entry(self)
+        self.coinsymbol.pack()
+
+        ttk.Button(self, text="Refresh", command=lambda: self.get_crypto(self.coinsymbol.get())).pack()
 
         self.figure = Figure(figsize=(5,4), dpi=100)
         self.ax = self.figure.add_subplot(111)
 
-        canvas = FigureCanvasTkAgg(self.figure, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasTkAgg(self.figure, self)
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        df1 = cc(key=Info.alpha_key, output_format='pandas')
-        btc = df1.get_digital_currency_daily('BTC', 'USD')
+        self.get_crypto('btc')
+
+    def get_crypto(self, coin):
+        
+        self.ax.clear()
+
+        df1 = cc(key=alpha_key, output_format='pandas')
+        btc = df1.get_digital_currency_daily(coin, 'USD')
         btc = btc[0].reset_index()
         btc.sort_values(by='date', ascending=False, inplace=True)
         btc = btc.iloc[:100, :]
         btc['date'] = pd.to_datetime(btc['date'])
         btc["MPLDates"] = btc["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
-        candle(self.ax, btc[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup='#00A3E0', colordown='#183A54')
+        candle(self.ax, btc[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
         for label in self.ax.xaxis.get_ticklabels():
             label.set_rotation(45)
         
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
+        self.figure.autofmt_xdate()
+        self.figure.tight_layout()
+
+        self.canvas.draw()
 
         # self.ani = animation.FuncAnimation(self.figure, self.animate, interval=1000)
     # def get_data(self):
@@ -129,4 +141,5 @@ class PageOne(tk.Frame):
 
         
 app = SeaofBTCapp()
+app.geometry('1280x720')
 app.mainloop()
