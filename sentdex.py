@@ -59,7 +59,7 @@ class SeaofBTCapp(tk.Tk):
 
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(PageOne)
+        self.show_frame(StartPage)
 
     def show_frame(self, page): # raise the page you wanna show
 
@@ -131,7 +131,7 @@ class StartPage(tk.Frame):
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
         self.figure.autofmt_xdate()
-        self.figure.tight_layout()
+        # self.figure.tight_layout()
         self.ax.set_ylabel('Price (USD)')
         self.ax.set_xlabel('Date')
         self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
