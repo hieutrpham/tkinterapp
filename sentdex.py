@@ -72,8 +72,15 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self,parent)
 
         self.symbol_entry = tk.Entry(self)
-        self.symbol_entry.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get())))
         self.symbol_entry.pack(pady=5)
+
+        self.start_date = tk.Entry(self)
+        self.start_date.pack()
+
+        self.end_date = tk.Entry(self)
+        self.end_date.pack()
+
+        self.symbol_entry.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get(), self.start_date.get(), self.end_date.get())))
 
         self.figure = Figure(figsize=(5,4), dpi=100)
         self.ax = self.figure.add_subplot(111)
@@ -112,15 +119,15 @@ class StartPage(tk.Frame):
         self.ax.set_title(f'{coin.upper()} Daily Prices')
         self.canvas.draw()
 
-    def get_stock(self, stock):
-
+    def get_stock(self, stock, start_date, end_date):
+        
         self.ax.clear()
 
         df = ts(key=alpha_key, output_format='pandas')
-        stock_data = df.get_daily_adjusted(stock, 'USD')[0].reset_index()
+        stock_data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
         stock_data.sort_values(by='date', ascending=False, inplace=True)
-        stock_data = stock_data.iloc[:100, :]
         stock_data['date'] = pd.to_datetime(stock_data['date'])
+        stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
         stock_data["MPLDates"] = stock_data["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
         candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
