@@ -39,11 +39,13 @@ class SeaofBTCapp(tk.Tk):
         
         tk.Tk.wm_title(self, 'Sea of BTC')
 
+        # master frame
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand = True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+        # menubar to add more options
         menubar = tk.Menu(container)
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label='Save settings', command=lambda: msg.showinfo('Title', 'Not supported just yet!'))
@@ -53,45 +55,53 @@ class SeaofBTCapp(tk.Tk):
 
         tk.Tk.config(self, menu=menubar)
 
-        self.frames = {}
-        for F in (StartPage, PageOne):
+        #top frame for user input
+        top_frame = tk.Frame(container)
+        top_frame.pack(pady=5)
 
-            frame = F(container, controller=self)
+        #company name to search for
+        ttk.Label(top_frame, text='Enter company name: ').grid(column=0, row=0)
+        self.search = ttk.Entry(top_frame) 
+        self.search.grid(column=1, row=0)
+        self.search.bind("<Return>", (lambda event: self.search_symbol(self.search.get())))
 
-            self.frames[F] = frame
+        #enter stock symbol to query pricing data
+        ttk.Label(top_frame, text='Enter stock symbol: ').grid(column=2, row=0)
 
-            frame.grid(row=0, column=0, sticky="nsew")
+        self.symbol_entry = ttk.Entry(top_frame)
+        self.symbol_entry.grid(column=3, row=0)
 
-        self.show_frame(StartPage)
+        # start date
+        tk.Label(top_frame, text='Start Date: ').grid(column=4, row=0)
+        self.start_date = ttk.Entry(top_frame)
+        self.start_date.grid(column=5, row=0)
 
-    def show_frame(self, page): # raise the page you wanna show
+        # end date
+        tk.Label(top_frame, text='End Date: ').grid(column=6, row=0)
+        self.end_date = ttk.Entry(top_frame)
+        self.end_date.grid(column=7, row=0)
 
-        frame = self.frames[page]
-        frame.tkraise()
-        
-class StartPage(tk.Frame):
+        ttk.Button(top_frame, text='Export Prices', command=self.export_prices).grid(column=8, row=0, padx=5)
 
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self,parent)
-
-        self.symbol_entry = tk.Entry(self)
-        self.symbol_entry.pack()
-
-        self.start_date = tk.Entry(self)
-        self.start_date.pack()
-
-        self.end_date = tk.Entry(self)
-        self.end_date.pack()
+        # middle frame to render graph
+        mid_frame = tk.Frame(container)
+        mid_frame.pack(expand=True, fill='both')
 
         self.symbol_entry.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get(), self.start_date.get(), self.end_date.get())))
+        self.end_date.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get(), self.start_date.get(), self.end_date.get())))
+        self.start_date.bind("<Return>", (lambda event: self.get_stock(self.symbol_entry.get(), self.start_date.get(), self.end_date.get())))
 
         self.figure = Figure(figsize=(5,4), dpi=100)
         self.ax = self.figure.add_subplot(111)
 
-        self.canvas = FigureCanvasTkAgg(self.figure, self)
-        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasTkAgg(self.figure, mid_frame)
+        self.canvas.get_tk_widget().pack(expand=True, fill='both')
 
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self)
+        # bottom frame for navigation tool bar
+        bot_frame = tk.Frame(container)
+        bot_frame.pack()
+
+        self.toolbar = NavigationToolbar2Tk(self.canvas, bot_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -144,31 +154,29 @@ class StartPage(tk.Frame):
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
         self.figure.autofmt_xdate()
         # self.figure.tight_layout()
-        self.ax.set_ylabel('Price (USD)')
+        self.ax.set_ylabel('Price')
         self.ax.set_xlabel('Date')
         self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
         self.canvas.draw()
     
+    def search_symbol(self, name):
 
-class PageOne(tk.Frame):
+        master = tk.Tk()
 
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
+        api_call = ts(key=alpha_key, output_format='pandas')
+        df = api_call.get_symbol_search(name)[0]
+        df = df[['1. symbol', '2. name', '3. type', '4. region', '8. currency']].rename(columns={'1. symbol':'Symbol', '2. name':'Name', '3. type':'Type', '4. region':'Region', '8. currency':'Currency'})
+        df.index.rename('', inplace=True)
+        search_results = tk.Text(master)
+        search_results.insert(tk.END, df)
+        search_results.pack(expand=True, fill='both')
 
-        button1 = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        master.mainloop()
 
-        ttk.Button(self, text='New Page', command=self.newpage).pack()
+    def export_prices(self):
+        pass
 
-    def newpage(self):
-        page = tk.Tk()
-        ttk.Button(page, text='new button').pack()
-        page.mainloop()
 
-        
 app = SeaofBTCapp()
 app.geometry('1280x720')
 app.mainloop()
