@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox as msg
 from tkinter import ttk
+from tkinter import filedialog as fd
+
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -18,6 +20,7 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
 
+
 LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
@@ -32,6 +35,8 @@ alpha_key = 'EAY8N3YJIB72Q35C'
 class SeaofBTCapp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
+
+        self.data = None
         
         tk.Tk.__init__(self, *args, **kwargs)
         
@@ -62,7 +67,7 @@ class SeaofBTCapp(tk.Tk):
         #company name to search for
         ttk.Label(top_frame, text='Enter company name: ').grid(column=0, row=0)
         self.search = ttk.Entry(top_frame) 
-        self.search.grid(column=1, row=0)
+        self.search.grid(column=1, row=0, padx=5)
         self.search.bind("<Return>", (lambda event: self.search_symbol(self.search.get())))
 
         #enter stock symbol to query pricing data
@@ -138,6 +143,7 @@ class SeaofBTCapp(tk.Tk):
 
         df = ts(key=alpha_key, output_format='pandas')
         stock_data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
+        self.data = stock_data
         stock_data.sort_values(by='date', ascending=False, inplace=True)
         stock_data['date'] = pd.to_datetime(stock_data['date'])
 
@@ -174,8 +180,12 @@ class SeaofBTCapp(tk.Tk):
         master.mainloop()
 
     def export_prices(self):
-        pass
-
+        filename = fd.asksaveasfilename(initialdir = "/", title = "Select file", defaultextension='.csv',
+                                        filetypes = (('Comma Separated Values (csv)', '*.csv'), ("All files","*.*")))
+        try:
+            self.data.to_csv(filename, index=False)
+        except Exception as e:
+            msg.showerror('Error saving file', str(e))
 
 app = SeaofBTCapp()
 app.geometry('1280x720')
