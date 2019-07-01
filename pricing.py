@@ -40,9 +40,9 @@ class SeaofBTCapp(tk.Tk):
         
         tk.Tk.__init__(self, *args, **kwargs)
         
-        # tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
+        tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
         
-        tk.Tk.wm_title(self, 'Sea of BTC')
+        tk.Tk.wm_title(self, 'Sea of FRT')
 
         # master frame
         container = tk.Frame(self)
@@ -142,42 +142,55 @@ class SeaofBTCapp(tk.Tk):
         self.ax.clear()
 
         df = ts(key=alpha_key, output_format='pandas')
-        stock_data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
-        self.data = stock_data
-        stock_data.sort_values(by='date', ascending=False, inplace=True)
-        stock_data['date'] = pd.to_datetime(stock_data['date'])
 
-        if start_date != '' and end_date != '':
-            stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
-        else: # default to last 100 days prices if user doesn't put start_date and end_date
-            stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
+        try:
+            stock_data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
+        except Exception as e:
+            msg.showerror('Error retrieving prices', str(e))
+        else:            
+            self.data = stock_data
+            stock_data.sort_values(by='date', ascending=False, inplace=True)
+            stock_data['date'] = pd.to_datetime(stock_data['date'])
 
-        stock_data["MPLDates"] = stock_data["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+            if start_date != '' and end_date != '':
+                stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
+            else: # default to last 100 days prices if user doesn't put start_date and end_date
+                stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
 
-        candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
-        
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
-        self.figure.autofmt_xdate()
-        # self.figure.tight_layout()
-        self.ax.set_ylabel('Price')
-        self.ax.set_xlabel('Date')
-        self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
-        self.canvas.draw()
+            stock_data["MPLDates"] = stock_data["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+
+            candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
+            
+            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
+            self.figure.autofmt_xdate()
+            # self.figure.tight_layout()
+            self.ax.set_ylabel('Price')
+            self.ax.set_xlabel('Date')
+            self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
+            self.canvas.draw()
     
     def search_symbol(self, name):
 
-        master = tk.Tk()
-
         api_call = ts(key=alpha_key, output_format='pandas')
-        df = api_call.get_symbol_search(name)[0]
-        df = df[['1. symbol', '2. name', '3. type', '4. region', '8. currency']].rename(columns={'1. symbol':'Symbol', '2. name':'Name', '3. type':'Type', '4. region':'Region', '8. currency':'Currency'})
-        df.index.rename('', inplace=True)
-        search_results = tk.Text(master)
-        search_results.insert(tk.END, df)
-        search_results.pack(expand=True, fill='both')
+        
+        try:
+            df = api_call.get_symbol_search(name)[0]
+        except IndexError:
+            msg.showerror('Error searching name', 'Could not find any results')
+        except Exception as e:
+            msg.showerror('Error searching name', str(e))
+        else:
+            master = tk.Tk()
+            master.wm_title('Search Results')
 
-        master.mainloop()
+            df = df[['1. symbol', '2. name', '3. type', '4. region', '8. currency']].rename(columns={'1. symbol':'Symbol', '2. name':'Name', '3. type':'Type', '4. region':'Region', '8. currency':'Currency'})
+            df.index.rename('', inplace=True)
+            search_results = tk.Text(master)
+            search_results.insert(tk.END, df)
+            search_results.pack(expand=True, fill='both')
+
+            master.mainloop()
 
     def export_prices(self):
         filename = fd.asksaveasfilename(initialdir = "/", title = "Select file", defaultextension='.csv',
@@ -187,6 +200,7 @@ class SeaofBTCapp(tk.Tk):
         except Exception as e:
             msg.showerror('Error saving file', str(e))
 
-app = SeaofBTCapp()
-app.geometry('1280x720')
-app.mainloop()
+if __name__ == "__main__":
+    app = SeaofBTCapp()
+    app.geometry('1280x720')
+    app.mainloop()
