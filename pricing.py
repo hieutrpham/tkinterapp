@@ -121,7 +121,7 @@ class SeaofBTCapp(tk.Tk):
         crypto.sort_values(by='date', ascending=False, inplace=True)
         crypto = crypto.iloc[:100, :]
         crypto['date'] = pd.to_datetime(crypto['date'])
-        crypto["MPLDates"] = crypto["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+        crypto["MPLDates"] = crypto.loc[:, "date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
         candle(self.ax, crypto[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
@@ -149,7 +149,7 @@ class SeaofBTCapp(tk.Tk):
             msg.showerror('Error retrieving prices', str(e))
         else:            
             self.data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
-            
+
             stock_data.sort_values(by='date', ascending=False, inplace=True)
             stock_data['date'] = pd.to_datetime(stock_data['date'])
 
@@ -161,7 +161,7 @@ class SeaofBTCapp(tk.Tk):
             else: # default to last 100 days prices if user doesn't put start_date and end_date
                 stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
 
-            stock_data["MPLDates"] = stock_data["date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+            stock_data["MPLDates"] = stock_data.loc[:, "date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
             candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
             
