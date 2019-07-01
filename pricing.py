@@ -144,16 +144,20 @@ class SeaofBTCapp(tk.Tk):
         df = ts(key=alpha_key, output_format='pandas')
 
         try:
-            stock_data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
+            stock_data = df.get_daily(symbol=stock, outputsize='full')[0].reset_index()
         except Exception as e:
             msg.showerror('Error retrieving prices', str(e))
         else:            
-            self.data = stock_data
+            self.data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
+            
             stock_data.sort_values(by='date', ascending=False, inplace=True)
             stock_data['date'] = pd.to_datetime(stock_data['date'])
 
             if start_date != '' and end_date != '':
-                stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
+                try:
+                    stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
+                except TypeError:
+                    msg.showerror('Date input error', 'Date format should be YYYYMMDD or YYYY-MM-DD')
             else: # default to last 100 days prices if user doesn't put start_date and end_date
                 stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
 
