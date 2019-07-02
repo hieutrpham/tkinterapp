@@ -161,8 +161,11 @@ class SeaofBTCapp(tk.Tk):
             else: # default to last 100 days prices if user doesn't put start_date and end_date
                 stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
 
-            stock_data["MPLDates"] = stock_data.loc[:, "date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
-
+            try:
+                stock_data["MPLDates"] = stock_data.loc[:, "date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+            except KeyError:
+                msg.showerror('Date input error', 'Date format should be YYYYMMDD or YYYY-MM-DD')
+                
             candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
             
             self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
