@@ -40,8 +40,11 @@ class SeaofBTCapp(tk.Tk):
         
         tk.Tk.__init__(self, *args, **kwargs)
         
-        tk.Tk.iconbitmap(self, default=r'C:\Users\hpham\Documents\GitHub\tkinterapp\got.ico')
-        
+        try:
+            tk.Tk.iconbitmap(self, default='got.ico')
+        except Exception:
+            pass
+
         tk.Tk.wm_title(self, 'Sea of FRT')
 
         # master frame
