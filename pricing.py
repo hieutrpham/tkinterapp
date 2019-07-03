@@ -116,7 +116,7 @@ class SeaofBTCapp(tk.Tk):
         self.get_crypto('btc')
 
     def get_crypto(self, coin):
-
+        """get crypto currency prices"""
         self.ax.clear()
 
         df = cc(key=alpha_key, output_format='pandas')
@@ -128,20 +128,16 @@ class SeaofBTCapp(tk.Tk):
 
         candle(self.ax, crypto[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
-        # for label in self.ax.xaxis.get_ticklabels():
-        #     label.set_rotation(45)
-        
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
         self.figure.autofmt_xdate()
-        # self.figure.tight_layout()
         self.ax.set_ylabel('Price')
         self.ax.set_xlabel('Date')
         self.ax.set_title(f'{coin.upper()} Daily Prices')
         self.canvas.draw()
 
     def get_stock(self, stock, start_date, end_date):
-        
+        """get common stock prices"""
         self.ax.clear()
 
         df = ts(key=alpha_key, output_format='pandas')
@@ -174,14 +170,14 @@ class SeaofBTCapp(tk.Tk):
             self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
             self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
             self.figure.autofmt_xdate()
-            # self.figure.tight_layout()
             self.ax.set_ylabel('Price')
             self.ax.set_xlabel('Date')
             self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
             self.canvas.draw()
     
     def search_symbol(self, name):
-
+        """search symbol based on a given name"""
+        
         api_call = ts(key=alpha_key, output_format='pandas')
         
         try:
@@ -203,8 +199,10 @@ class SeaofBTCapp(tk.Tk):
             master.mainloop()
 
     def export_prices(self):
+        """export prices to a given file name"""
+
         filename = fd.asksaveasfilename(initialdir = "/", title = "Select file", defaultextension='.csv',
-                                        filetypes = (('Comma Separated Values (csv)', '*.csv'), ("All files","*.*")))
+                                        filetypes = (('Comma Separated Values', '*.csv'), ("All files","*.*")))
         try:
             self.data.to_csv(filename, index=False)
         except Exception as e:
