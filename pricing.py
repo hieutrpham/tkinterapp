@@ -32,12 +32,13 @@ lightcolor = '#00A3E0'
 darkcolor = '#183A54'
 alpha_key = 'EAY8N3YJIB72Q35C'
 
+timeseries = ts(key=alpha_key, output_format='pandas')
+
 class SeaofBTCapp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
 
         self.data = None
-        timeseries = ts(key=alpha_key, output_format='pandas')
         
         tk.Tk.__init__(self, *args, **kwargs)
         
@@ -112,7 +113,7 @@ class SeaofBTCapp(tk.Tk):
 
         self.toolbar = NavigationToolbar2Tk(self.canvas, bot_frame)
         self.toolbar.update()
-        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.canvas._tkcanvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.get_crypto('btc')
 
@@ -141,15 +142,11 @@ class SeaofBTCapp(tk.Tk):
         """get common stock prices"""
         self.ax.clear()
 
-        df = ts(key=alpha_key, output_format='pandas')
-
         try:
-            stock_data = df.get_daily(symbol=stock, outputsize='full')[0].reset_index()
+            stock_data = timeseries.get_daily(symbol=stock, outputsize='full')[0].reset_index()
         except Exception as e:
             msg.showerror('Error retrieving prices', str(e))
         else:            
-            self.data = df.get_daily_adjusted(symbol=stock, outputsize='full')[0].reset_index()
-
             stock_data.sort_values(by='date', ascending=False, inplace=True)
             stock_data['date'] = pd.to_datetime(stock_data['date'])
 
@@ -179,10 +176,8 @@ class SeaofBTCapp(tk.Tk):
     def search_symbol(self, name):
         """search symbol based on a given name"""
         
-        api_call = ts(key=alpha_key, output_format='pandas')
-        
         try:
-            df = api_call.get_symbol_search(name)[0]
+            df = timeseries.get_symbol_search(name)[0]
         except IndexError:
             msg.showerror('Error searching name', 'Could not find any results')
         except Exception as e:
@@ -205,7 +200,8 @@ class SeaofBTCapp(tk.Tk):
         filename = fd.asksaveasfilename(initialdir = "/", title = "Select file", defaultextension='.csv',
                                         filetypes = (('Comma Separated Values', '*.csv'), ("All files","*.*")))
         try:
-            self.data.to_csv(filename, index=False)
+            data = timeseries.get_daily_adjusted(symbol=self.symbol_entry.get(), outputsize='full')[0].reset_index()
+            data.to_csv(filename, index=False)
         except Exception as e:
             msg.showerror('Error saving file', str(e))
 
