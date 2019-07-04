@@ -37,6 +37,7 @@ class SeaofBTCapp(tk.Tk):
     def __init__(self, *args, **kwargs):
 
         self.data = None
+        timeseries = ts(key=alpha_key, output_format='pandas')
         
         tk.Tk.__init__(self, *args, **kwargs)
         
