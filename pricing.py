@@ -15,7 +15,6 @@ import numpy as np
 from mpl_finance import candlestick_ohlc as candle
 from alpha_vantage.timeseries import TimeSeries as ts
 from alpha_vantage.cryptocurrencies import CryptoCurrencies as cc
-# from utilities import Info
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
@@ -37,8 +36,6 @@ timeseries = ts(key=alpha_key, output_format='pandas')
 class SeaofBTCapp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
-
-        self.data = None
         
         tk.Tk.__init__(self, *args, **kwargs)
         
